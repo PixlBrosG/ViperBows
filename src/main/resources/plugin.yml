@@ -1,0 +1,14 @@
+name: ViperBows
+version: '${version}'
+main: dev.pixl.plugins.viperbows.ViperBowsPlugin
+api-version: '1.20'
+commands:
+  createbow:
+    permission: viperbows.command.createbow
+    permission-message: No.
+  bowid:
+    permission: viperbows.command.bowid
+    permission-message: No.
+    description: Create a sample bow with the explosive ability
+    aliases: []
+    usage: createbow
