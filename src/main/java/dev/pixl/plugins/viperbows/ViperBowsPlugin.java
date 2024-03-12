@@ -2,6 +2,8 @@ package dev.pixl.plugins.viperbows;
 
 import dev.pixl.plugins.viperbows.ability.Ability;
 import dev.pixl.plugins.viperbows.ability.ExplosiveAbility;
+import dev.pixl.plugins.viperbows.ability.LightningAbility;
+import dev.pixl.plugins.viperbows.ability.ShotgunAbility;
 import dev.pixl.plugins.viperbows.util.NbtItem;
 import dev.pixl.plugins.viperbows.viperbow.ViperBowManager;
 import dev.pixl.plugins.viperbows.viperbow.ViperBowSerializer;
@@ -9,8 +11,12 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +53,21 @@ public final class ViperBowsPlugin extends JavaPlugin implements Listener {
     // Plugin shutdown logic
   }
 
+  @EventHandler
+  public void onEntityShootBow(EntityShootBowEvent event) {
+    if (event.getEntityType() != EntityType.PLAYER) {
+      return;
+    }
+
+    NbtItem bow = new NbtItem(event.getBow());
+    viperBowManager.onShoot(bow, event);
+  }
+
+  @EventHandler
+  public void onProjectileHit(ProjectileHitEvent event) {
+    viperBowManager.onHit(event);
+  }
+
   @Override
   public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                            @NotNull String label, String[] args) {
@@ -80,14 +101,20 @@ public final class ViperBowsPlugin extends JavaPlugin implements Listener {
       }
 
       NbtItem bow = new NbtItem(Material.BOW);
-      bow.setName(ChatColor.RED + "Explosive Bow");
-      bow.setLore(new String[]{ ChatColor.DARK_GRAY + "Explodes on impact" });
+      bow.setName(ChatColor.RED + "Explosive Shotgun Bow");
+      bow.setLore(new String[]{ ChatColor.DARK_GRAY + "Explodes on impact", ChatColor.DARK_GRAY + "Shoots like a shotgun!" });
       viperBowManager.registerAbility(bow, new ExplosiveAbility());
+      viperBowManager.registerAbility(bow, new ShotgunAbility());
+      viperBowManager.registerAbility(bow, new LightningAbility());
 
       player.getInventory().addItem(bow.getItem());
     }
 
     return true;
+  }
+
+  public ViperBowManager getViperBowManager() {
+    return viperBowManager;
   }
 
   public static ViperBowsPlugin getInstance() {

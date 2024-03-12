@@ -9,13 +9,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class GUI implements Listener, Cloneable {
+public class GUI implements Listener {
   private final Inventory inventory;
-
-  @Override
-  public GUI clone() throws CloneNotSupportedException {
-    return (GUI)super.clone();
-  }
 
   public GUI(int rows, String name) {
     this.inventory = Bukkit.createInventory(null, 9 * rows, name);

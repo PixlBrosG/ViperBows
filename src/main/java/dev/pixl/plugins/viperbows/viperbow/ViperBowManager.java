@@ -1,17 +1,19 @@
 package dev.pixl.plugins.viperbows.viperbow;
 
-import dev.pixl.plugins.viperbows.ViperBowsPlugin;
 import dev.pixl.plugins.viperbows.ability.Ability;
 import dev.pixl.plugins.viperbows.util.NbtItem;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 
 import java.util.*;
 
 public class ViperBowManager {
   Map<UUID, List<Ability>> bowAbilities;
+  Map<UUID, UUID> projectiles;
 
   public ViperBowManager() {
-    this.bowAbilities = new HashMap<>();
+    bowAbilities = new HashMap<>();
+    projectiles = new HashMap<>();
   }
 
   public void registerAbility(NbtItem item, Ability ability) {
@@ -38,5 +40,34 @@ public class ViperBowManager {
 
   public List<Ability> getAbilities(UUID uuid) {
     return bowAbilities.get(uuid);
+  }
+
+  public void onShoot(NbtItem item, EntityShootBowEvent event) {
+    String uuidString = item.getString("uuid");
+    if (uuidString.isEmpty()) {
+      return;
+    }
+
+    UUID uuid = UUID.fromString(uuidString);
+    if (bowAbilities.containsKey(uuid)) {
+      projectiles.put(event.getProjectile().getUniqueId(), uuid);
+
+      bowAbilities.get(uuid).forEach(ability -> ability.onShoot(uuid, event));
+    }
+  }
+
+  public void onHit(ProjectileHitEvent event) {
+    UUID uuid = event.getEntity().getUniqueId();
+
+    if (projectiles.containsKey(uuid)) {
+      UUID bowID = projectiles.get(uuid);
+      projectiles.remove(uuid);
+
+      bowAbilities.get(bowID).forEach(ability -> ability.onHit(bowID, event));
+    }
+  }
+
+  public void registerProjectile(UUID projectileID, UUID bowID) {
+    projectiles.put(projectileID, bowID);
   }
 }
