@@ -42,6 +42,26 @@ public class ViperBowManager {
     return bowAbilities.get(uuid);
   }
 
+  /**
+   * Get all the abilities for all the bows<br>
+   * does not clone the map
+   *
+   * @return A map of all the abilities for all the bows
+   */
+  public Map<UUID, List<Ability>> getAbilities() {
+    return bowAbilities;
+  }
+
+  /**
+   * Set the abilities for all the bows<br>
+   * does not clone the map
+   *
+   * @param abilities A map of all the abilities for all the bows
+   */
+  public void setAbilities(Map<UUID, List<Ability>> abilities) {
+    this.bowAbilities = abilities;
+  }
+
   public void onShoot(NbtItem item, EntityShootBowEvent event) {
     String uuidString = item.getString("uuid");
     if (uuidString.isEmpty()) {
