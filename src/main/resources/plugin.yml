@@ -6,9 +6,24 @@ commands:
   createbow:
     permission: viperbows.command.createbow
     permission-message: No.
+    description: Create a sample bow with the explosive ability
+    aliases: []
+    usage: createbow
   bowid:
     permission: viperbows.command.bowid
     permission-message: No.
     description: Create a sample bow with the explosive ability
     aliases: []
-    usage: createbow
+    usage: bowid
+  vbsave: # Temporary command
+    permission: viperbows.command.vbsave
+    permission-message: No.
+    description: Save all ViperBows to a file
+    aliases: []
+    usage: vbsave
+  vbload: # Temporary command
+    permission: viperbows.command.vbload
+    permission-message: No.
+    description: Load all ViperBows from a file
+    aliases: []
+    usage: vbload

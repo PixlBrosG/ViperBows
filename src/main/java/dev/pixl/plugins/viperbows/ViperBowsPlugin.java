@@ -46,11 +46,13 @@ public final class ViperBowsPlugin extends JavaPlugin implements Listener {
     viperBowSerializer = new ViperBowSerializer(viperBowManager);
 
     getServer().getPluginManager().registerEvents(this, this);
+
+    viperBowSerializer.deserialize();
   }
 
   @Override
   public void onDisable() {
-    // Plugin shutdown logic
+    viperBowSerializer.serialize();
   }
 
   @EventHandler
@@ -108,6 +110,14 @@ public final class ViperBowsPlugin extends JavaPlugin implements Listener {
       viperBowManager.registerAbility(bow, new LightningAbility());
 
       player.getInventory().addItem(bow.getItem());
+    }
+
+    if (command.getName().equalsIgnoreCase("vbsave")) {
+      viperBowSerializer.serialize();
+    }
+
+    if (command.getName().equalsIgnoreCase("vbload")) {
+      viperBowSerializer.deserialize();
     }
 
     return true;
