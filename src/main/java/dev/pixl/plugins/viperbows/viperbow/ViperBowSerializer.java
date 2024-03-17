@@ -26,9 +26,9 @@ public class ViperBowSerializer {
     File file = new File(plugin.getDataFolder(), "bows.yml");
     FileConfiguration config = new YamlConfiguration();
 
-    Map<UUID, List<Ability>> abilities = viperBowManager.getAbilities();
+    Map<UUID, List<Ability>> bows = viperBowManager.getBows();
 
-    for (Map.Entry<UUID, List<Ability>> entry : abilities.entrySet()) {
+    for (Map.Entry<UUID, List<Ability>> entry : bows.entrySet()) {
       UUID uuid = entry.getKey();
       List<Ability> abilityList = entry.getValue();
 
@@ -55,7 +55,7 @@ public class ViperBowSerializer {
   private void serializeField(Field field, Ability ability, ConfigurationSection section) {
     if (!Modifier.isStatic(field.getModifiers())) {
       try {
-        Object value = null;
+        Object value;
 
         if (Modifier.isPrivate(field.getModifiers())) {
           String getterName = (field.getType().equals(boolean.class) ? "is" : "get") +
@@ -90,8 +90,13 @@ public class ViperBowSerializer {
     Map<UUID, List<Ability>> abilities = new HashMap<>();
 
     for (String key : config.getKeys(false)) {
-      UUID uuid = UUID.fromString(key);
       ConfigurationSection section = config.getConfigurationSection(key);
+      if (section == null) {
+        // TODO: Find a way to not need this
+        continue;
+      }
+
+      UUID uuid = UUID.fromString(key);
       List<Ability> abilityList = new ArrayList<>();
 
       for (String abilityName : section.getKeys(false)) {
@@ -114,7 +119,7 @@ public class ViperBowSerializer {
       abilities.put(uuid, abilityList);
     }
 
-    viperBowManager.setAbilities(abilities);
+    viperBowManager.setBows(abilities);
   }
 
   private void deserializeField(Field field, Ability ability, ConfigurationSection section) {

@@ -3,16 +3,16 @@ version: '${version}'
 main: dev.pixl.plugins.viperbows.ViperBowsPlugin
 api-version: '1.20'
 commands:
-  createbow:
-    permission: viperbows.command.createbow
+  vbcreate:
+    permission: viperbows.command.vbcreate
     permission-message: No.
     description: Create a sample bow with the explosive ability
     aliases: []
     usage: createbow
-  bowid:
-    permission: viperbows.command.bowid
+  vbinfo:
+    permission: viperbows.command.vbinfo
     permission-message: No.
-    description: Create a sample bow with the explosive ability
+    description: Info about the currently held ViperBow
     aliases: []
     usage: bowid
   vbsave: # Temporary command
@@ -27,3 +27,9 @@ commands:
     description: Load all ViperBows from a file
     aliases: []
     usage: vbload
+  vbedit:
+    permission: viperbows.command.vbedit
+    permission-message: No.
+    description: Edit the currently held ViperBow
+    aliases: []
+    usage: vbedit
