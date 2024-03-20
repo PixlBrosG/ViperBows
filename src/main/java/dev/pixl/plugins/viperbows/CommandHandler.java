@@ -79,10 +79,6 @@ public class CommandHandler {
     ItemNBT.setLore(bow, new String[]{ ChatColor.DARK_GRAY + "Explodes on impact", ChatColor.DARK_GRAY + "Shoots like a shotgun!" });
 
     UUID bowID = viperBowManager.registerBow(bow);
-    viperBowManager.addAbility(bowID, new ExplosiveAbility());
-    viperBowManager.addAbility(bowID, new ShotgunAbility());
-    viperBowManager.addAbility(bowID, new LightningAbility());
-
     player.getInventory().addItem(bow);
 
     sender.sendMessage(PREFIX + ChatColor.GREEN + "Created bow with UUID: " + ChatColor.LIGHT_PURPLE + bowID);
@@ -94,7 +90,8 @@ public class CommandHandler {
     ViperBowsPlugin plugin = ViperBowsPlugin.getInstance();
     ViperBowSerializer viperBowSerializer = plugin.getViperBowSerializer();
 
-    viperBowSerializer.serialize();
+    // viperBowSerializer.serializeAbilities();
+    viperBowSerializer.serializeBows();
 
     sender.sendMessage(PREFIX + ChatColor.GREEN + "Saved ViperBows data.");
 
@@ -105,7 +102,8 @@ public class CommandHandler {
     ViperBowsPlugin plugin = ViperBowsPlugin.getInstance();
     ViperBowSerializer viperBowSerializer = plugin.getViperBowSerializer();
 
-    viperBowSerializer.deserialize();
+    viperBowSerializer.deserializeAbilities();
+    viperBowSerializer.deserializeBows();
 
     sender.sendMessage(PREFIX + ChatColor.GREEN + "Loaded ViperBows data.");
 

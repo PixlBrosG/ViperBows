@@ -1,17 +1,23 @@
 package dev.pixl.plugins.viperbows.viperbow;
 
+import dev.pixl.plugins.viperbows.ViperBowsPlugin;
 import dev.pixl.plugins.viperbows.ability.Ability;
+import dev.pixl.plugins.viperbows.ability.AbilityMetadata;
+import dev.pixl.plugins.viperbows.ability.property.AbilityProperty;
 import dev.pixl.plugins.viperbows.gui.GUI;
 import dev.pixl.plugins.viperbows.util.ItemNBT;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +29,7 @@ public class ViperBowManager implements Listener {
   Map<UUID, List<Ability>> bows;
   Map<UUID, UUID> projectiles;
 
-  List<Class<? extends Ability>> abilities;
+  List<AbilityMetadata> abilities;
 
   public ViperBowManager() {
     bows = new HashMap<>();
@@ -31,12 +37,15 @@ public class ViperBowManager implements Listener {
     abilities = new ArrayList<>();
   }
 
-  public void registerAbility(Class<? extends Ability> ability){
-    if (abilities.contains(ability)) {
-      // TODO: Handle this
-      return;
+  public void clearAbilities() {
+    abilities.clear();
+  }
+
+  public void registerAbility(AbilityMetadata metadata) {
+    if (abilities.stream().anyMatch(a -> a.getAbilityClass().equals(metadata.getAbilityClass()))) {
+      throw new IllegalArgumentException("Ability already registered");
     }
-    abilities.add(ability);
+    abilities.add(metadata);
   }
 
   public UUID registerBow(ItemStack item)  {
@@ -82,6 +91,10 @@ public class ViperBowManager implements Listener {
     }
 
     bowAbilities.add(ability);
+  }
+
+  public List<AbilityProperty> getProperties(Class<? extends Ability> ability) {
+    return abilities.stream().filter(a -> a.getAbilityClass().equals(ability)).findFirst().map(AbilityMetadata::getProperties).orElse(null);
   }
 
   public List<Ability> getAbilities(UUID uuid) {
@@ -147,19 +160,31 @@ public class ViperBowManager implements Listener {
     GUI gui = new GUI(3, ChatColor.DARK_RED + "ViperBow Editor");
 
     for (int i = 0; i < 2*9 && 2*9*page+i < abilities.size(); ++i) {
-      Class<? extends Ability> abilityClass = abilities.get(2*9*page+i);
+      AbilityMetadata abilityMetadata = abilities.get(2*9*page+i);
 
-      Material material = hasAbility(bowID, abilityClass) ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE;
+      ItemStack item = new ItemStack(abilityMetadata.getMaterial());
 
-      ItemStack item = new ItemStack(material);
-      ItemNBT.setName(item, ChatColor.AQUA + abilityClass.getSimpleName());
+      ItemMeta meta = item.getItemMeta();
+      if (meta != null) {
+        if (hasAbility(bowID, abilityMetadata.getAbilityClass())) {
+          meta.setDisplayName(ChatColor.GREEN + abilityMetadata.getName());
+
+          meta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+          meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        } else {
+          meta.setDisplayName(ChatColor.RED + abilityMetadata.getName());
+        }
+
+        meta.setLore(abilityMetadata.getLore());
+        item.setItemMeta(meta);
+      }
 
       gui.setItem(i, item, clickedItem -> {
-        if (hasAbility(bowID, abilityClass)) {
-          bows.get(bowID).removeIf(a -> a.getClass().equals(abilityClass));
+        if (hasAbility(bowID, abilityMetadata.getAbilityClass())) {
+          bows.get(bowID).removeIf(a -> a.getClass().equals(abilityMetadata.getAbilityClass()));
         } else {
           try {
-            addAbility(bowID, abilityClass.getDeclaredConstructor().newInstance());
+            addAbility(bowID, abilityMetadata.getAbilityClass().getDeclaredConstructor().newInstance());
           } catch (Exception e) {
             e.printStackTrace();
           }
@@ -194,5 +219,9 @@ public class ViperBowManager implements Listener {
 
   public void openEditor(Player player, UUID bowID) {
     openEditor(player, bowID, 0);
+  }
+
+  public AbilityMetadata getAbilityMetadata(Class<? extends Ability> abilityClass) {
+    return abilities.stream().filter(a -> a.getAbilityClass().equals(abilityClass)).findFirst().orElse(null);
   }
 }

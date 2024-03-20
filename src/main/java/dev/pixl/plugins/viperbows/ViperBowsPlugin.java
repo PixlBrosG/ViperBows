@@ -1,6 +1,5 @@
 package dev.pixl.plugins.viperbows;
 
-import dev.pixl.plugins.viperbows.ability.*;
 import dev.pixl.plugins.viperbows.viperbow.ViperBowManager;
 import dev.pixl.plugins.viperbows.viperbow.ViperBowSerializer;
 import org.bukkit.command.Command;
@@ -35,19 +34,14 @@ public final class ViperBowsPlugin extends JavaPlugin {
 
     getServer().getPluginManager().registerEvents(viperBowManager, this);
 
-    viperBowSerializer.deserialize();
-
-    // Register abilities
-    // TODO: Move this to serializer - load from config
-    viperBowManager.registerAbility(ExplosiveAbility.class);
-    viperBowManager.registerAbility(ShotgunAbility.class);
-    viperBowManager.registerAbility(LightningAbility.class);
-    viperBowManager.registerAbility(ImpulseAbility.class);
+    viperBowSerializer.deserializeAbilities();
+    viperBowSerializer.deserializeBows();
   }
 
   @Override
   public void onDisable() {
-    viperBowSerializer.serialize();
+    // viperBowSerializer.serializeAbilities();
+    viperBowSerializer.serializeBows();
   }
 
   @Override

@@ -1,6 +1,7 @@
 package dev.pixl.plugins.viperbows.ability;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.jetbrains.annotations.NotNull;
@@ -19,19 +20,15 @@ public class ExplosiveAbility implements Ability {
 
   @Override
   public void onHit(@NotNull UUID bowID, @NotNull ProjectileHitEvent event) {
-    Entity projectile = event.getEntity();
-    projectile.getWorld().createExplosion(projectile.getLocation(), force, setFire, breakBlocks);
+    Projectile projectile = event.getEntity();
+    projectile.getWorld().createExplosion(projectile.getLocation(), force, setFire, breakBlocks, (Entity)projectile.getShooter());
   }
 
   public int getForce() {
     return force;
   }
 
-  public void setForce(int force) throws IllegalArgumentException {
-    if (force < 1 || force > 10) {
-      throw new IllegalArgumentException("Force must be between 1 (inclusive) and 10 (inclusive)");
-    }
-
+  public void setForce(int force) {
     this.force = force;
   }
 
