@@ -1,5 +1,6 @@
-package dev.pixl.plugins.viperbows.ability;
+package dev.pixl.plugins.viperbows.abilities;
 
+import dev.pixl.plugins.viperbows.ability.Ability;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.entity.EntityShootBowEvent;

@@ -1,9 +1,6 @@
 package dev.pixl.plugins.viperbows;
 
 import dev.pixl.plugins.viperbows.ability.Ability;
-import dev.pixl.plugins.viperbows.ability.ExplosiveAbility;
-import dev.pixl.plugins.viperbows.ability.LightningAbility;
-import dev.pixl.plugins.viperbows.ability.ShotgunAbility;
 import dev.pixl.plugins.viperbows.util.ItemNBT;
 import dev.pixl.plugins.viperbows.viperbow.ViperBowManager;
 import dev.pixl.plugins.viperbows.viperbow.ViperBowSerializer;
@@ -13,6 +10,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -24,23 +22,25 @@ public class CommandHandler {
   // private static final String NO_PERMISSION = PREFIX + ChatColor.RED + "You do not have permission to use this command.";
 
   public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, String[] args) {
-    return switch (command.getName()) {
-      case "vbinfo" -> command_vbinfo(sender, args);
-      case "vbcreate" -> command_vbcreate(sender, args);
-      case "vbsave" -> command_vbsave(sender, args);
-      case "vbload" -> command_vbload(sender, args);
-      case "vbedit" -> command_vbedit(sender, args);
-      default -> false;
-    };
-  }
-
-  private boolean command_vbinfo(CommandSender sender, String[] args) {
-    if (!(sender instanceof Player player)) {
-      sender.sendMessage(ONLY_PLAYERS);
-      return true;
+    switch (command.getName()) {
+      case "vbinfo" -> commandInfo(sender);
+      case "vbcreate" -> commandCreate(sender);
+      case "vbsave" -> commandSave(sender);
+      case "vbload" -> commandLoad(sender);
+      case "vbedit" -> commandEdit(sender, args);
+      default -> { return false; }
     }
 
-    ViperBowsPlugin plugin = ViperBowsPlugin.getInstance();
+    return true;
+  }
+
+  private void commandInfo(CommandSender sender) {
+    if (!(sender instanceof Player player)) {
+      sender.sendMessage(ONLY_PLAYERS);
+      return;
+    }
+
+    ViperBowsPlugin plugin = JavaPlugin.getPlugin(ViperBowsPlugin.class);
     ViperBowManager viperBowManager = plugin.getViperBowManager();
 
     ItemStack heldItem = player.getInventory().getItemInMainHand();
@@ -48,12 +48,12 @@ public class CommandHandler {
 
     if (uuid == null) {
       sender.sendMessage(PREFIX + ChatColor.RED + "No UUID found!");
-      return true;
+      return;
     }
 
     if (!viperBowManager.isBow(uuid)) {
       sender.sendMessage(PREFIX + ChatColor.RED + "Invalid UUID!");
-      return true;
+      return;
     }
 
     sender.sendMessage(ChatColor.GREEN + "UUID: " + ChatColor.LIGHT_PURPLE + uuid);
@@ -61,88 +61,78 @@ public class CommandHandler {
     for (Ability ability : viperBowManager.getAbilities(uuid)) {
       sender.sendMessage(ChatColor.GREEN + " - " + ChatColor.LIGHT_PURPLE + ability.getClass().getName());
     }
-
-    return true;
   }
 
-  private boolean command_vbcreate(CommandSender sender, String[] args) {
+  private void commandCreate(CommandSender sender) {
     if (!(sender instanceof Player player)) {
       sender.sendMessage(ONLY_PLAYERS);
-      return true;
+      return;
     }
 
-    ViperBowsPlugin plugin = ViperBowsPlugin.getInstance();
+    ViperBowsPlugin plugin = JavaPlugin.getPlugin(ViperBowsPlugin.class);
     ViperBowManager viperBowManager = plugin.getViperBowManager();
 
     ItemStack bow = new ItemStack(Material.BOW);
-    ItemNBT.setName(bow, ChatColor.RED + "Explosive Shotgun Bow");
-    ItemNBT.setLore(bow, new String[]{ ChatColor.DARK_GRAY + "Explodes on impact", ChatColor.DARK_GRAY + "Shoots like a shotgun!" });
+    ItemNBT.setName(bow, ChatColor.RED + "Viper Bow");
+    ItemNBT.setLore(bow, new String[]{ ChatColor.GRAY + "Custom bow created with ViperBows" });
 
     UUID bowID = viperBowManager.registerBow(bow);
     player.getInventory().addItem(bow);
 
     sender.sendMessage(PREFIX + ChatColor.GREEN + "Created bow with UUID: " + ChatColor.LIGHT_PURPLE + bowID);
-
-    return true;
   }
 
-  private boolean command_vbsave(CommandSender sender, String[] args) {
-    ViperBowsPlugin plugin = ViperBowsPlugin.getInstance();
+  private void commandSave(CommandSender sender) {
+    ViperBowsPlugin plugin = JavaPlugin.getPlugin(ViperBowsPlugin.class);
     ViperBowSerializer viperBowSerializer = plugin.getViperBowSerializer();
 
-    // viperBowSerializer.serializeAbilities();
+    // TODO: viperBowSerializer.serializeAbilities();
     viperBowSerializer.serializeBows();
 
     sender.sendMessage(PREFIX + ChatColor.GREEN + "Saved ViperBows data.");
-
-    return true;
   }
 
-  private boolean command_vbload(CommandSender sender, String[] args) {
-    ViperBowsPlugin plugin = ViperBowsPlugin.getInstance();
+  private void commandLoad(CommandSender sender) {
+    ViperBowsPlugin plugin = JavaPlugin.getPlugin(ViperBowsPlugin.class);
     ViperBowSerializer viperBowSerializer = plugin.getViperBowSerializer();
 
     viperBowSerializer.deserializeAbilities();
     viperBowSerializer.deserializeBows();
 
     sender.sendMessage(PREFIX + ChatColor.GREEN + "Loaded ViperBows data.");
-
-    return true;
   }
 
-  private boolean command_vbedit(CommandSender sender, String[] args) {
+  private void commandEdit(CommandSender sender, String[] args) {
     if (!(sender instanceof Player player)) {
       sender.sendMessage(ONLY_PLAYERS);
-      return true;
+      return;
     }
 
-    ViperBowsPlugin plugin = ViperBowsPlugin.getInstance();
+    ViperBowsPlugin plugin = JavaPlugin.getPlugin(ViperBowsPlugin.class);
     ViperBowManager viperBowManager = plugin.getViperBowManager();
 
     if (args.length == 0) {
       ItemStack item = player.getInventory().getItemInMainHand();
       if (item.getType() != Material.BOW) {
         player.sendMessage(PREFIX + ChatColor.RED + "You must be holding a bow to use this command.");
-        return true;
+        return;
       }
 
       UUID uuid = viperBowManager.getBowID(item);
-      viperBowManager.openEditor(player, uuid);
-
-      return true;
+      plugin.getViperBowEditor().open(player, uuid);
+      return;
     }
 
     try {
       UUID uuid = UUID.fromString(args[0]);
       if (viperBowManager.isBow(uuid)) {
         player.sendMessage(PREFIX + ChatColor.RED + "No bow found with that UUID.");
-        return true;
+        return;
       }
 
-      viperBowManager.openEditor(player, uuid);
+      plugin.getViperBowEditor().open(player, uuid);
     } catch (IllegalArgumentException e) {
       player.sendMessage(PREFIX + ChatColor.RED + "Invalid UUID");
     }
-    return true;
   }
 }

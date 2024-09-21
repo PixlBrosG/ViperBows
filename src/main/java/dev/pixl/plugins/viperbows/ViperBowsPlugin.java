@@ -1,5 +1,6 @@
 package dev.pixl.plugins.viperbows;
 
+import dev.pixl.plugins.viperbows.gui.ViperBowEditor;
 import dev.pixl.plugins.viperbows.viperbow.ViperBowManager;
 import dev.pixl.plugins.viperbows.viperbow.ViperBowSerializer;
 import org.bukkit.command.Command;
@@ -17,19 +18,14 @@ public final class ViperBowsPlugin extends JavaPlugin {
 
   private ViperBowManager viperBowManager;
   private ViperBowSerializer viperBowSerializer;
+  private ViperBowEditor viperBowEditor;
   private CommandHandler commandHandler;
-
-  // TODO: Change this somehow
-  private static ViperBowsPlugin instance;
 
   @Override
   public void onEnable() {
-    if (instance == null) {
-      instance = this;
-    }
-
     viperBowManager = new ViperBowManager();
     viperBowSerializer = new ViperBowSerializer(viperBowManager);
+    viperBowEditor = new ViperBowEditor(viperBowManager);
     commandHandler = new CommandHandler();
 
     getServer().getPluginManager().registerEvents(viperBowManager, this);
@@ -58,7 +54,7 @@ public final class ViperBowsPlugin extends JavaPlugin {
     return viperBowSerializer;
   }
 
-  public static ViperBowsPlugin getInstance() {
-    return instance;
+  public ViperBowEditor getViperBowEditor() {
+    return viperBowEditor;
   }
 }

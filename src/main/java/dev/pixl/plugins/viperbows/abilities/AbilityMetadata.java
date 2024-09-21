@@ -1,9 +1,11 @@
-package dev.pixl.plugins.viperbows.ability;
+package dev.pixl.plugins.viperbows.abilities;
 
+import dev.pixl.plugins.viperbows.ability.Ability;
 import dev.pixl.plugins.viperbows.ability.property.AbilityProperty;
 import org.bukkit.Material;
 import org.bukkit.permissions.Permission;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AbilityMetadata {
@@ -23,6 +25,7 @@ public class AbilityMetadata {
   private List<AbilityProperty> properties;
 
   public AbilityMetadata() {
+    properties = new ArrayList<>();
   }
 
   public Class<? extends Ability> getAbilityClass() {

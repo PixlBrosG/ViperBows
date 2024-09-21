@@ -1,10 +1,12 @@
-package dev.pixl.plugins.viperbows.ability;
+package dev.pixl.plugins.viperbows.abilities;
 
 import dev.pixl.plugins.viperbows.ViperBowsPlugin;
+import dev.pixl.plugins.viperbows.ability.Ability;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,7 +21,7 @@ public class ShotgunAbility implements Ability {
   private boolean registerNewArrows = true;
 
   @Override
-  public void onShoot(@NotNull UUID bowID, EntityShootBowEvent event) {
+  public void onShoot(@NotNull UUID bowID, @NotNull EntityShootBowEvent event) {
     Vector velocity = event.getProjectile().getVelocity();
 
     for (int i = 0; i < amount; ++i) {
@@ -45,7 +47,7 @@ public class ShotgunAbility implements Ability {
       Projectile newArrow = event.getEntity().launchProjectile(Arrow.class, newVelocity);
 
       if (registerNewArrows) {
-        ViperBowsPlugin.getInstance().getViperBowManager().registerProjectile(newArrow.getUniqueId(), bowID);
+        JavaPlugin.getPlugin(ViperBowsPlugin.class).getViperBowManager().registerProjectile(newArrow.getUniqueId(), bowID);
       }
     }
   }

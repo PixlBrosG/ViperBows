@@ -1,6 +1,8 @@
-package dev.pixl.plugins.viperbows.ability;
+package dev.pixl.plugins.viperbows.abilities;
 
 import dev.pixl.plugins.viperbows.ViperBowsPlugin;
+import dev.pixl.plugins.viperbows.ability.Ability;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
@@ -21,15 +23,16 @@ public class TacticalNukeAbility implements Ability {
   private int delay = 5;
 
   private class NukeMeta {
-    public boolean active = false;
+    private boolean active = false;
     // Scheduled task
-    public int taskID = -1;
+    private int taskID = -1;
 
     public void start(UUID arrowID) {
       active = false;
       taskID = Bukkit.getScheduler().scheduleSyncDelayedTask(JavaPlugin.getPlugin(ViperBowsPlugin.class), () -> {
         active = true;
         Entity arrow = Bukkit.getEntity(arrowID);
+        Bukkit.broadcastMessage(ChatColor.DARK_RED + "TACTICAL NUKE INCOMING!");
         if (arrow != null) {
           arrow.setVelocity(new Vector(0, 0, 0));
         }

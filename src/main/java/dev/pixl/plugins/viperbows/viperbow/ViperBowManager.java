@@ -2,23 +2,17 @@ package dev.pixl.plugins.viperbows.viperbow;
 
 import dev.pixl.plugins.viperbows.ViperBowsPlugin;
 import dev.pixl.plugins.viperbows.ability.Ability;
-import dev.pixl.plugins.viperbows.ability.AbilityMetadata;
+import dev.pixl.plugins.viperbows.abilities.AbilityMetadata;
 import dev.pixl.plugins.viperbows.ability.property.AbilityProperty;
-import dev.pixl.plugins.viperbows.gui.GUI;
 import dev.pixl.plugins.viperbows.util.ItemNBT;
-import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +76,9 @@ public class ViperBowManager implements Listener {
   }
 
   public void addAbility(UUID uuid, Ability ability) {
-    // NOTE: This should probably validate that the ability class is registered
+    if (!isAbilityEnabled(ability.getClass())) {
+      return;
+    }
 
     List<Ability> bowAbilities = bows.get(uuid);
     if (hasAbility(uuid, ability.getClass())) {
@@ -91,6 +87,14 @@ public class ViperBowManager implements Listener {
     }
 
     bowAbilities.add(ability);
+  }
+
+  private boolean isAbilityEnabled(Class<? extends Ability> abilityClass) {
+    return abilities.stream().anyMatch(a -> a.getAbilityClass().equals(abilityClass) && a.isEnabled());
+  }
+
+  private boolean isAbilityRegistered(Class<? extends Ability> abilityClass) {
+    return abilities.stream().anyMatch(a -> a.getAbilityClass().equals(abilityClass));
   }
 
   public List<AbilityProperty> getProperties(Class<? extends Ability> ability) {
@@ -156,72 +160,24 @@ public class ViperBowManager implements Listener {
     projectiles.put(projectileID, bowID);
   }
 
-  private void openEditor(Player player, UUID bowID, int page) {
-    GUI gui = new GUI(3, ChatColor.DARK_RED + "ViperBow Editor");
-
-    for (int i = 0; i < 2*9 && 2*9*page+i < abilities.size(); ++i) {
-      AbilityMetadata abilityMetadata = abilities.get(2*9*page+i);
-
-      ItemStack item = new ItemStack(abilityMetadata.getMaterial());
-
-      ItemMeta meta = item.getItemMeta();
-      if (meta != null) {
-        if (hasAbility(bowID, abilityMetadata.getAbilityClass())) {
-          meta.setDisplayName(ChatColor.GREEN + abilityMetadata.getName());
-
-          meta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-          meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        } else {
-          meta.setDisplayName(ChatColor.RED + abilityMetadata.getName());
-        }
-
-        meta.setLore(abilityMetadata.getLore());
-        item.setItemMeta(meta);
+  public void toggleAbility(UUID bowID, Class<? extends Ability> abilityClass) {
+    if (hasAbility(bowID, abilityClass)) {
+      bows.get(bowID).removeIf(a -> a.getClass().equals(abilityClass));
+    } else {
+      try {
+        Ability ability = abilityClass.getDeclaredConstructor().newInstance();
+        addAbility(bowID, ability);
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        JavaPlugin.getPlugin(ViperBowsPlugin.class).getLogger().severe("Failed to instantiate ability " + abilityClass.getName());
       }
-
-      gui.setItem(i, item, clickedItem -> {
-        if (hasAbility(bowID, abilityMetadata.getAbilityClass())) {
-          bows.get(bowID).removeIf(a -> a.getClass().equals(abilityMetadata.getAbilityClass()));
-        } else {
-          try {
-            addAbility(bowID, abilityMetadata.getAbilityClass().getDeclaredConstructor().newInstance());
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-        }
-        openEditor(player, bowID, page);
-      });
     }
-
-    // Bottom row
-    {
-      ItemStack bowItem = new ItemStack(Material.BOW);
-      ItemStack barrierItem = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-      ItemStack previousPageItem = new ItemStack(Material.ARROW);
-      ItemStack nextPageItem = new ItemStack(Material.ARROW);
-
-      ItemNBT.setName(barrierItem, " ");
-      ItemNBT.setName(bowItem, ChatColor.RED + "ViperBow");
-      ItemNBT.setName(previousPageItem, ChatColor.RED + "Previous Page");
-      ItemNBT.setName(nextPageItem, ChatColor.GREEN + "Next Page");
-
-      for (int i = 2*9; i < 3*9; ++i) {
-        gui.setItem(i, barrierItem, null);
-      }
-
-      gui.setItem(2*9+3, previousPageItem, null);
-      gui.setItem(2*9+4, bowItem, null);
-      gui.setItem(2*9+5, nextPageItem, null);
-    }
-
-    gui.openInventory(player);
-  }
-
-  public void openEditor(Player player, UUID bowID) {
-    openEditor(player, bowID, 0);
   }
 
   public AbilityMetadata getAbilityMetadata(Class<? extends Ability> abilityClass) {
     return abilities.stream().filter(a -> a.getAbilityClass().equals(abilityClass)).findFirst().orElse(null);
+  }
+
+  public List<AbilityMetadata> getRegisteredAbilities() {
+    return abilities;
   }
 }

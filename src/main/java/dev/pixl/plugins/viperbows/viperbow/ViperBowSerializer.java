@@ -2,7 +2,7 @@ package dev.pixl.plugins.viperbows.viperbow;
 
 import dev.pixl.plugins.viperbows.ViperBowsPlugin;
 import dev.pixl.plugins.viperbows.ability.Ability;
-import dev.pixl.plugins.viperbows.ability.AbilityMetadata;
+import dev.pixl.plugins.viperbows.abilities.AbilityMetadata;
 import dev.pixl.plugins.viperbows.ability.property.AbilityProperty;
 import dev.pixl.plugins.viperbows.ability.property.BooleanProperty;
 import dev.pixl.plugins.viperbows.ability.property.IntProperty;
@@ -80,33 +80,25 @@ public class ViperBowSerializer {
       List<Ability> abilityList = new ArrayList<>();
 
       for (String abilityName : section.getKeys(false)) {
+        Class<? extends Ability> abilityClass = getAbilityClass(abilityName);
+        ConfigurationSection abilitySection = section.getConfigurationSection(abilityName);
+
+        if (abilityClass == null || abilitySection == null) {
+          continue;
+        }
+
         try {
-          Class<?> clazz = Class.forName(abilityName.replace('-', '.'));
-
-          if (!Ability.class.isAssignableFrom(clazz)) {
-            String message = "Class " + abilityName + " does not extend Ability";
-            plugin.getLogger().log(Level.SEVERE, message);
-            continue;
-          }
-
-          @SuppressWarnings("unchecked")
-          Class<? extends Ability> abilityClass = (Class<? extends Ability>)clazz;
-
           Ability ability = abilityClass.getDeclaredConstructor().newInstance();
           AbilityMetadata metadata = viperBowManager.getAbilityMetadata(abilityClass);
-          ConfigurationSection abilitySection = section.getConfigurationSection(abilityName);
-
-          if (abilitySection == null) {
-            continue;
-          }
 
           for (AbilityProperty property : metadata.getProperties()) {
             property.setValue(ability, abilitySection.get(property.getName()));
           }
-
-          abilityList.add(ability);
+        } catch (NoSuchMethodException e) {
+          String message = "Could not find constructor for " + abilityName;
+          plugin.getLogger().log(Level.SEVERE, message, e);
         } catch (Exception e) {
-          String message = "Could not load ability " + abilityName;
+          String message = "Could not instantiate " + abilityName;
           plugin.getLogger().log(Level.SEVERE, message, e);
         }
       }
@@ -137,21 +129,8 @@ public class ViperBowSerializer {
       }
 
       AbilityMetadata metadata = new AbilityMetadata();
-      try {
-        Class<?> clazz = Class.forName(key.replace('-', '.'));
-        if (!Ability.class.isAssignableFrom(clazz)) {
-          String message = "Class " + key + " does not extend Ability";
-          plugin.getLogger().log(Level.SEVERE, message);
-          continue;
-        }
-
-        @SuppressWarnings("unchecked")
-        Class<? extends Ability> abilityClass = (Class<? extends Ability>)clazz;
-
-        metadata.setAbilityClass(abilityClass);
-      } catch (ClassNotFoundException e) {
-        String message = "Could not load ability class " + key;
-        plugin.getLogger().log(Level.SEVERE, message, e);
+      Class<? extends Ability> abilityClass = getAbilityClass(key);
+      if (abilityClass == null) {
         continue;
       }
 
@@ -161,6 +140,7 @@ public class ViperBowSerializer {
         continue;
       }
 
+      metadata.setAbilityClass(abilityClass);
       metadata.setName(section.getString("name"));
       metadata.setLore(section.getStringList("lore"));
       metadata.setEnabled(section.getBoolean("enabled"));
@@ -175,7 +155,7 @@ public class ViperBowSerializer {
       if (propertiesSection != null) {
         for (String propertyName : propertiesSection.getKeys(false)) {
           ConfigurationSection propertySection = propertiesSection.getConfigurationSection(propertyName);
-          AbilityProperty property = deserializeProperty(metadata.getAbilityClass(), propertyName, propertySection);
+          AbilityProperty property = deserializeProperty(abilityClass, propertyName, propertySection);
           if (property != null) {
             properties.add(property);
           }
@@ -219,5 +199,24 @@ public class ViperBowSerializer {
     property.setModifiable(section.getBoolean("modifiable"));
     property.setMaterial(Material.valueOf(section.getString("material")));
     return property;
+  }
+
+  private Class<? extends Ability> getAbilityClass(String abilityName) {
+    try {
+      Class<?> clazz = Class.forName(abilityName.replace('-', '.'));
+      if (!Ability.class.isAssignableFrom(clazz)) {
+        String message = "Class " + abilityName + " does not extend Ability";
+        JavaPlugin.getPlugin(ViperBowsPlugin.class).getLogger().severe(message);
+        return null;
+      }
+
+      @SuppressWarnings("unchecked")
+      Class<? extends Ability> abilityClass = (Class<? extends Ability>)clazz;
+      return abilityClass;
+    } catch (ClassNotFoundException e) {
+      String message = "Could not load ability class " + abilityName;
+      JavaPlugin.getPlugin(ViperBowsPlugin.class).getLogger().log(Level.SEVERE, message, e);
+      return null;
+    }
   }
 }

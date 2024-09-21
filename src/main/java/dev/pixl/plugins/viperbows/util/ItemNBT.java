@@ -5,6 +5,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 
@@ -34,22 +35,22 @@ public class ItemNBT {
   }
 
   public static boolean hasIntTag(ItemStack item, String key) {
-    NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+    NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
     return hasIntTag(item.getItemMeta(), namespacedKey);
   }
 
   public static boolean hasFloatTag(ItemStack item, String key) {
-      NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+      NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
       return hasFloatTag(item.getItemMeta(), namespacedKey);
   }
 
   public static boolean hasStringTag(ItemStack item, String key) {
-      NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+      NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
       return hasStringTag(item.getItemMeta(), namespacedKey);
   }
 
   public static void setTag(ItemStack item, String key, int value) {
-    NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+    NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
     ItemMeta meta = item.getItemMeta();
     if (meta != null) {
       meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.INTEGER, value);
@@ -58,7 +59,7 @@ public class ItemNBT {
   }
 
   public static void setTag(ItemStack item, String key, float value) {
-    NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+    NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
     ItemMeta meta = item.getItemMeta();
     if (meta != null) {
       meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.FLOAT, value);
@@ -67,7 +68,7 @@ public class ItemNBT {
   }
 
   public static void setTag(ItemStack item, String key, String value) {
-    NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+    NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
     ItemMeta meta = item.getItemMeta();
     if (meta != null) {
       meta.getPersistentDataContainer().set(namespacedKey, PersistentDataType.STRING, value);
@@ -76,7 +77,7 @@ public class ItemNBT {
   }
 
   public static int getIntTag(ItemStack item, String key) {
-    NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+    NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
     ItemMeta itemMeta = item.getItemMeta();
 
     if (!hasIntTag(itemMeta, namespacedKey)) {
@@ -94,7 +95,7 @@ public class ItemNBT {
   }
 
   public static float getFloatTag(ItemStack item, String key) {
-    NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+    NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
     ItemMeta itemMeta = item.getItemMeta();
 
     if (!hasFloatTag(itemMeta, namespacedKey)) {
@@ -112,7 +113,7 @@ public class ItemNBT {
   }
 
   public static String getStringTag(ItemStack item, String key) {
-    NamespacedKey namespacedKey = new NamespacedKey(ViperBowsPlugin.getInstance(), key);
+    NamespacedKey namespacedKey = new NamespacedKey(JavaPlugin.getPlugin(ViperBowsPlugin.class), key);
     ItemMeta itemMeta = item.getItemMeta();
 
     if (!hasStringTag(itemMeta, namespacedKey)) {

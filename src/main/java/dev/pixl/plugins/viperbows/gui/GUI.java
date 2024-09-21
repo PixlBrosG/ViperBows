@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,20 +16,28 @@ import java.util.function.Consumer;
 
 public class GUI implements Listener {
   private final Inventory inventory;
-  private final Map<Integer, Consumer<ItemStack>> onClickEvents;
+  private final Map<Integer, Consumer<InventoryClickEvent>> onClickEvents;
 
   public GUI(int rows, String name) {
     this.inventory = Bukkit.createInventory(null, 9 * rows, name);
     this.onClickEvents = new HashMap<>();
 
-    Bukkit.getPluginManager().registerEvents(this, ViperBowsPlugin.getInstance());
+    Bukkit.getPluginManager().registerEvents(this, JavaPlugin.getPlugin(ViperBowsPlugin.class));
   }
 
-  public void setItem(int slot, ItemStack item, Consumer<ItemStack> onClick) {
+  public void setItem(int slot, ItemStack item, Consumer<InventoryClickEvent> onClick) {
     if (onClick != null) {
       onClickEvents.put(slot, onClick);
     }
 
+    this.inventory.setItem(slot, item);
+  }
+
+  public void setItem(int slot, ItemStack item) {
+      setItem(slot, item, null);
+  }
+
+  public void updateItem(int slot, ItemStack item) {
     this.inventory.setItem(slot, item);
   }
 
@@ -46,7 +55,7 @@ public class GUI implements Listener {
 
     ItemStack item = event.getCurrentItem();
     if (item != null && onClickEvents.containsKey(event.getSlot())) {
-      onClickEvents.get(event.getSlot()).accept(item);
+      onClickEvents.get(event.getSlot()).accept(event);
     }
   }
 
